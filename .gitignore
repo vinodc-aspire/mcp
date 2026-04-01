@@ -30,3 +30,4 @@ Thumbs.db
 *.swp
 *.swo
 .mcpregistry_github_token
+.mcpregistry_registry_token
