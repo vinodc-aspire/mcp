@@ -19,6 +19,7 @@ fastify.get("/health", async () => ({
 
 // MCP endpoint — POST (stateless JSON-RPC)
 fastify.post("/mcp", async (request, reply) => {
+  //header must be set to accept JSON for the StreamableHTTPServerTransport to work correctly
   request.raw.headers["accept"] = "application/json, text/event-stream";
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
