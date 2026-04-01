@@ -1,0 +1,17 @@
+{
+  "$schema": "https://registry.modelcontextprotocol.io/schema/server.json",
+  "name": "aspire-learning",
+  "description": "Aspire Learning MCP — browse courses, chapters, lessons, and import LaTeX quizzes",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.aspirelearning.app/mcp"
+    }
+  ],
+  "tools": [
+    { "name": "get_courses", "description": "Fetch all available courses" },
+    { "name": "get_units_with_chapters", "description": "Get units and chapters for a course" },
+    { "name": "get_lessons", "description": "Get lessons for a chapter" },
+    { "name": "import_quizzes", "description": "Import LaTeX quiz file into a lesson" }
+  ]
+}

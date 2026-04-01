@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createMcpServer } from './mcp/tools.js';
 
@@ -7,6 +8,7 @@ const HOST = process.env.MCP_HOST ?? '0.0.0.0';
 const PORT = parseInt(process.env.MCP_PORT ?? '3100', 10);
 
 const fastify = Fastify({ logger: true });
+await fastify.register(cors, { origin: true });
 const mcpServer = createMcpServer();
 
 // Health check
