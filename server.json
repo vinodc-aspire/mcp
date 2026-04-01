@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.vinodc-aspire/mcp",
-  "version": "1.0.1",
+  "name": "app.aspirelearning/mcp",
+  "version": "1.0.2",
   "description": "Aspire Learning MCP — browse courses, chapters, lessons, and import LaTeX quizzes",
   "remotes": [
     {
