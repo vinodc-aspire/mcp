@@ -7,9 +7,9 @@
     {
       "type": "streamable-http",
       "url": "https://mcp.aspirelearning.app/mcp",
-      "headers": {
-        "Authorization": "Bearer ${MCP_API_KEY}"
-      }
+      "headers": [
+        { "key": "Authorization", "value": "Bearer ${MCP_API_KEY}" }
+      ]
     }
   ],
   "tools": [
