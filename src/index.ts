@@ -1,4 +1,5 @@
 import "dotenv/config";
+import crypto from "node:crypto";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -6,6 +7,33 @@ import { createMcpServer } from "./mcp/tools.js";
 
 const HOST = process.env.MCP_HOST ?? "0.0.0.0";
 const PORT = parseInt(process.env.MCP_PORT ?? "3100", 10);
+
+const API_KEY = process.env.MCP_API_KEY ?? "";
+if (!API_KEY) {
+  // eslint-disable-next-line no-console
+  console.error("FATAL: MCP_API_KEY environment variable is not set — refusing to start");
+  process.exit(1);
+}
+
+function checkAuth(
+  request: import("fastify").FastifyRequest,
+  reply: import("fastify").FastifyReply,
+  done: (err?: Error) => void,
+) {
+  const auth = (request.headers["authorization"] as string | undefined) ?? "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  const keyBuf = Buffer.from(API_KEY);
+  const tokBuf = Buffer.alloc(keyBuf.length);
+  tokBuf.write(token);
+  const valid =
+    token.length === API_KEY.length &&
+    crypto.timingSafeEqual(keyBuf, tokBuf);
+  if (!valid) {
+    reply.status(401).send({ error: "Unauthorized" });
+    return;
+  }
+  done();
+}
 
 const fastify = Fastify({ logger: true });
 await fastify.register(cors, { origin: true });
@@ -18,7 +46,7 @@ fastify.get("/health", async () => ({
 }));
 
 // MCP endpoint — POST (stateless JSON-RPC)
-fastify.post("/mcp", async (request, reply) => {
+fastify.post("/mcp", { preHandler: checkAuth }, async (request, reply) => {
   //header must be set to accept JSON for the StreamableHTTPServerTransport to work correctly
   request.raw.headers["accept"] = "application/json, text/event-stream";
   const transport = new StreamableHTTPServerTransport({
