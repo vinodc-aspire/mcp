@@ -4,31 +4,36 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createMcpServer } from "./mcp/tools.js";
-
+import { FastifyReply, FastifyRequest } from "fastify";
 const HOST = process.env.MCP_HOST ?? "0.0.0.0";
 const PORT = parseInt(process.env.MCP_PORT ?? "3100", 10);
 
 const API_KEY = process.env.MCP_API_KEY ?? "";
 if (!API_KEY) {
   // eslint-disable-next-line no-console
-  console.error("FATAL: MCP_API_KEY environment variable is not set — refusing to start");
+  console.error(
+    "FATAL: MCP_API_KEY environment variable is not set — refusing to start",
+  );
   process.exit(1);
 }
 
 function checkAuth(
-  request: import("fastify").FastifyRequest,
-  reply: import("fastify").FastifyReply,
+  request: FastifyRequest,
+  reply: FastifyReply,
   done: (err?: Error) => void,
 ) {
   const auth = (request.headers["authorization"] as string | undefined) ?? "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   const keyBuf = Buffer.from(API_KEY);
+  // Allocate tokBuf at keyBuf's byte length so timingSafeEqual never throws on
+  // mismatched sizes. The length pre-check below is the primary rejection gate;
+  // tokBuf.write truncates tokens that exceed keyBuf.length (harmless given the check).
   const tokBuf = Buffer.alloc(keyBuf.length);
   tokBuf.write(token);
   const valid =
-    token.length === API_KEY.length &&
-    crypto.timingSafeEqual(keyBuf, tokBuf);
+    token.length === API_KEY.length && crypto.timingSafeEqual(keyBuf, tokBuf);
   if (!valid) {
+    reply.header("WWW-Authenticate", 'Bearer realm="mcp"');
     reply.status(401).send({ error: "Unauthorized" });
     return;
   }
